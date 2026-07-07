@@ -27,6 +27,20 @@ API docs are available at:
 - `GET /api/schema/`
 - `GET /api/docs/`
 
+## React Storefront
+
+The customer frontend lives in `frontend/` and talks to this Django API.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://127.0.0.1:3000`.
+
+The frontend implements Home, About, Shop, Product Detail, Contact, Login/Register, Cart, Checkout, Favorites, Support, and Order Tracking. The user-flow map is in `docs/frontend-user-flow.md`.
+
 Default demo staff account from `seed_demo`:
 
 - Email: `admin@example.com`

@@ -10,3 +10,4 @@ staticfiles/*
 !staticfiles/.gitkeep
 .env
 .DS_Store
+frontend-user-flow.md

@@ -41,6 +41,8 @@ Open `http://127.0.0.1:3000`.
 
 The frontend implements Home, About, Shop, Product Detail, Contact, Login/Register, Cart, Checkout, Favorites, Support, and Order Tracking. The user-flow map is in `docs/frontend-user-flow.md`.
 
+Staff users can open the React admin UI at `http://127.0.0.1:3000/admin`. It consumes the same Django APIs for dashboard metrics, users, orders, products, support tickets, and review moderation.
+
 Default demo staff account from `seed_demo`:
 
 - Email: `admin@example.com`

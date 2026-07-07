@@ -109,6 +109,63 @@ export type User = {
   full_name: string;
   phone: string;
   role: string;
+  is_staff?: boolean;
+};
+
+export type AdminUser = User & {
+  is_active: boolean;
+  is_staff: boolean;
+  is_superuser: boolean;
+  email_verified: boolean;
+  order_count: number;
+  date_joined: string;
+  last_login: string | null;
+};
+
+export type AdminDashboard = {
+  metrics: {
+    revenue: string;
+    orders_total: number;
+    orders_pending_payment: number;
+    orders_to_fulfill: number;
+    customers_total: number;
+    products_active: number;
+    low_stock_count: number;
+    pending_support_count: number;
+  };
+  low_stock: {
+    variant_id: number;
+    sku: string;
+    product: string;
+    size: string;
+    color: string;
+    stock_quantity: number;
+    threshold: number;
+  }[];
+  best_sellers: {
+    id: number;
+    name: string;
+    slug: string;
+    sold_count: number;
+    rating_avg: string;
+  }[];
+  recent_orders: {
+    id: number;
+    number: string;
+    customer: string;
+    status: string;
+    total: string;
+    created_at: string;
+  }[];
+  pending_tickets: {
+    id: number;
+    subject: string;
+    email: string;
+    priority: string;
+    status: string;
+    last_message_at: string;
+  }[];
+  order_status_counts: { status: string; count: number }[];
 };
 
 export type Order = {

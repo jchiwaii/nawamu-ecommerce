@@ -44,11 +44,12 @@ class MeSerializer(serializers.ModelSerializer):
             "full_name",
             "phone",
             "role",
+            "is_staff",
             "email_verified",
             "customer_profile",
             "date_joined",
         ]
-        read_only_fields = ["id", "email", "role", "email_verified", "date_joined"]
+        read_only_fields = ["id", "email", "role", "is_staff", "email_verified", "date_joined"]
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop("customer_profile", None)

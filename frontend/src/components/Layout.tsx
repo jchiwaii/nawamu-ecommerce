@@ -36,6 +36,11 @@ export function Layout({ children }: PropsWithChildren) {
             ))}
           </div>
           <div className="nav-actions">
+            {user?.is_staff ? (
+              <Link to="/admin" className="icon-link" ariaLabel="Admin dashboard">
+                Admin
+              </Link>
+            ) : null}
             <Link to="/favorites" className="icon-link" ariaLabel="Favorites">
               Saved
             </Link>
@@ -102,6 +107,7 @@ function Footer() {
         <div>
           <h3>Backend</h3>
           <a href="http://127.0.0.1:8000/admin/">Django Admin</a>
+          <Link to="/admin">React Admin UI</Link>
           <a href="http://127.0.0.1:8000/api/docs/">API Docs</a>
         </div>
       </div>

@@ -10,6 +10,7 @@ import { LoginPage, RegisterPage } from "./pages/AuthPages";
 import { CartPage } from "./pages/Cart";
 import { CheckoutPage } from "./pages/Checkout";
 import { FavoritesPage, OrderDetailPage, OrdersPage, SupportPage } from "./pages/Account";
+import { AdminPage } from "./pages/Admin";
 
 export function App() {
   return (
@@ -42,6 +43,12 @@ function Routes() {
   if (pathname.startsWith("/account/orders/")) {
     return <OrderDetailPage number={decodeURIComponent(pathname.replace("/account/orders/", ""))} />;
   }
+  if (pathname === "/admin") return <AdminPage tab="dashboard" />;
+  if (pathname === "/admin/orders") return <AdminPage tab="orders" />;
+  if (pathname === "/admin/products") return <AdminPage tab="products" />;
+  if (pathname === "/admin/users") return <AdminPage tab="users" />;
+  if (pathname === "/admin/support") return <AdminPage tab="support" />;
+  if (pathname === "/admin/reviews") return <AdminPage tab="reviews" />;
 
   return (
     <section className="page-hero">

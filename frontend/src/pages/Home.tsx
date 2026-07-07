@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { api } from "../api/client";
-import type { Category, Product, Review } from "../api/types";
+import { api, asList } from "../api/client";
+import type { Brand, Category, Product, Review } from "../api/types";
 import { ErrorBlock, LoadingBlock } from "../components/AsyncState";
 import { ProductCard } from "../components/ProductCard";
-import { SectionHeader } from "../components/SectionHeader";
 import { Link } from "../state/router";
 import { money, productImage } from "../utils";
 
 export function Home() {
-  const [featured, setFeatured] = useState<Product[]>([]);
+  const [latest, setLatest] = useState<Product[]>([]);
   const [popular, setPopular] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,17 +18,19 @@ export function Home() {
   useEffect(() => {
     async function load() {
       try {
-        const [featuredData, popularData, categoryData] = await Promise.all([
-          api.products("?is_featured=true&page_size=6"),
-          api.products("?ordering=-created_at&page_size=4"),
+        const [latestData, popularData, categoryData, brandData] = await Promise.all([
+          api.products("?ordering=-created_at&page_size=6"),
+          api.products("?ordering=-sold_count&page_size=4"),
           api.categories(),
+          api.brands(),
         ]);
-        setFeatured(featuredData.results);
-        setPopular(popularData.results);
-        setCategories(Array.isArray(categoryData) ? categoryData : categoryData.results);
-        if (featuredData.results[0]) {
-          const reviewData = await api.productReviews(featuredData.results[0].slug);
-          setReviews(reviewData.results.slice(0, 3));
+        setLatest(latestData.results);
+        setPopular(popularData.results.length ? popularData.results : latestData.results.slice(0, 4));
+        setCategories(asList(categoryData));
+        setBrands(asList(brandData));
+        if (latestData.results[0]) {
+          const reviewData = await api.productReviews(latestData.results[0].slug);
+          setReviews(reviewData.results.slice(0, 2));
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not load storefront data.");
@@ -39,127 +41,180 @@ export function Home() {
     load();
   }, []);
 
-  if (loading) return <LoadingBlock label="Loading Nawamu storefront" />;
+  if (loading) return <LoadingBlock label="Loading Nawamu" />;
   if (error) return <ErrorBlock message={error} />;
 
-  const heroProduct = featured[0] || popular[0];
+  const leadProducts = latest.slice(0, 4);
+  const heroProduct = latest[0] || popular[0];
 
   return (
     <>
-      <section className="home-hero">
-        <div className="hero-copy">
-          <p className="eyebrow">New season footwear</p>
-          <h1>Shoes that keep up with your whole day.</h1>
-          <p>
-            Browse everyday runners, clean sneakers, and durable boots pulled live from the Django catalog.
-          </p>
-          <div className="button-row">
-            <Link to="/shop" className="button primary">
-              Shop collection
-            </Link>
-            <Link to="/about" className="button ghost">
-              Our story
-            </Link>
-          </div>
-        </div>
-        {heroProduct ? (
-          <Link to={`/shop/${heroProduct.slug}`} className="hero-product">
-            <img src={productImage(heroProduct)} alt={heroProduct.name} />
-            <div>
-              <span>Featured</span>
-              <h2>{heroProduct.name}</h2>
-              <p>{money(heroProduct.min_price || heroProduct.base_price)}</p>
-            </div>
+      <section className="market-hero">
+        <div className="market-hero-inner">
+          <p className="tiny-label">New season</p>
+          <h1>New shoes have arrived</h1>
+          <p>Shop clean everyday pairs from different brands for men, women, and kids.</p>
+          <Link to="/shop" className="quiet-button dark">
+            Explore the collection
           </Link>
-        ) : null}
+        </div>
       </section>
 
-      <section className="section">
-        <SectionHeader
-          eyebrow="New arrivals"
-          title="Fresh pairs from the backend"
-          copy="Every product card here is loaded from `/api/products/` and can go straight into cart."
-        >
-          <Link to="/shop">View all</Link>
-        </SectionHeader>
-        <div className="product-grid">
-          {featured.map((product, index) => (
+      <section className="home-section latest-layout">
+        <div className="section-side-copy">
+          <p className="tiny-label">Latest looks</p>
+          <h2>For every day, every size, every brand.</h2>
+          <p>
+            A simple catalogue that updates from Django Admin. Add shoes, sizes, colours, and stock once; the shop updates here.
+          </p>
+          <Link to="/shop" className="under-link">
+            Browse all
+          </Link>
+        </div>
+        <div className="mini-product-grid">
+          {leadProducts.map((product, index) => (
             <ProductCard product={product} index={index} key={product.id} />
           ))}
         </div>
       </section>
 
-      <section className="banner">
+      <section className="sale-strip">
         <div>
-          <p className="eyebrow">Built for movement</p>
-          <h2>Find your size, choose your color, pay by M-Pesa.</h2>
+          <p className="tiny-label light">Mid-year sale</p>
+          <h2>Up to 40% off selected shoes</h2>
+          <p>Use the admin dashboard to feature sale products and keep the offer current.</p>
         </div>
-        <Link to="/shop?q=best%20shoes%20of%20men" className="button dark">
-          Search men&apos;s best shoes
+        <Link to="/shop?ordering=base_price" className="quiet-button light-button">
+          View deals
         </Link>
       </section>
 
-      <section className="section split-section">
-        <div>
-          <SectionHeader
-            eyebrow="Categories"
-            title="Shop by intent"
-            copy="Categories come from Django Admin, so the storefront updates when the admin changes the catalog."
-          />
+      <section className="home-section">
+        <div className="simple-heading">
+          <h2>Customer favourites</h2>
+          <Link to="/shop?ordering=-sold_count">See all</Link>
         </div>
-        <div className="category-grid">
-          {categories.slice(0, 6).map((category) => (
-            <Link key={category.id} to={`/shop?category=${category.slug}`} className="category-card">
-              <span>{category.name.slice(0, 2)}</span>
-              <h3>{category.name}</h3>
-              <p>{category.description || "Explore available shoes and variants."}</p>
+        <div className="favorite-grid">
+          {popular.slice(0, 4).map((product, index) => (
+            <ProductCard product={product} index={index + 3} key={product.id} />
+          ))}
+        </div>
+      </section>
+
+      <section className="brand-panel">
+        <div className="brand-panel-image">
+          {heroProduct ? <img src={productImage(heroProduct)} alt={heroProduct.name} /> : null}
+        </div>
+        <div className="brand-panel-copy">
+          <p className="tiny-label">About us</p>
+          <h2>Multi-brand shoes, kept clear and easy to buy.</h2>
+          <p>
+            Nawamu is shaped like a modern marketplace, but kept calm: quick search, visible prices, cart, M-Pesa checkout, support,
+            and order tracking.
+          </p>
+          <div className="service-row">
+            <span>Variant stock</span>
+            <span>M-Pesa ready</span>
+            <span>Order tracking</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section explore-layout">
+        <div className="section-side-copy">
+          <p className="tiny-label">Explore</p>
+          <h2>Shop by customer</h2>
+          <p>Men, women, kids, and unisex pairs are handled as backend filters.</p>
+        </div>
+        <div className="room-grid">
+          <Link to="/shop?gender=men" className="room-card">
+            <span />
+            <h3>Men</h3>
+            <p>Runners, sneakers, boots, and daily pairs.</p>
+          </Link>
+          <Link to="/shop?gender=women" className="room-card">
+            <span />
+            <h3>Women</h3>
+            <p>Clean styles from multiple brands.</p>
+          </Link>
+          <Link to="/shop?gender=kids" className="room-card">
+            <span />
+            <h3>Kids</h3>
+            <p>Simple filtering for young shoppers.</p>
+          </Link>
+        </div>
+      </section>
+
+      <section className="home-section brand-cloud">
+        <div className="simple-heading">
+          <h2>Browse brands</h2>
+          <Link to="/shop">All products</Link>
+        </div>
+        <div className="brand-tags">
+          {(brands.length ? brands : fallbackBrands).slice(0, 10).map((brand) => (
+            <Link key={brand.id} to={`/shop?brand=${brand.slug}`}>
+              {brand.name}
             </Link>
           ))}
         </div>
       </section>
 
-      <section className="section">
-        <SectionHeader eyebrow="Most popular" title="Pairs people keep choosing" />
-        <div className="product-grid compact">
-          {popular.map((product, index) => (
-            <ProductCard product={product} index={index + 4} key={product.id} />
-          ))}
+      <section className="quiet-cta">
+        <div>
+          <h2>Ready to find your next pair?</h2>
+          <p>Search by brand, category, gender, size, colour, or price.</p>
         </div>
+        <Link to="/shop?q=best%20shoes%20of%20men" className="quiet-button light-button">
+          Start shopping
+        </Link>
       </section>
 
-      <section className="section values-strip">
-        <article>
-          <span>01</span>
-          <h3>Variant-level stock</h3>
-          <p>Size and color availability is checked before cart and checkout.</p>
-        </article>
-        <article>
-          <span>02</span>
-          <h3>Live order tracking</h3>
-          <p>Customers can follow status history once their order is placed.</p>
-        </article>
-        <article>
-          <span>03</span>
-          <h3>Support threads</h3>
-          <p>Contact messages become admin-managed support tickets.</p>
-        </article>
-      </section>
-
-      <section className="section testimonials">
-        <SectionHeader eyebrow="Reviews" title="Customer notes" />
-        <div className="testimonial-grid">
+      <section className="home-section testimonial-section">
+        <div className="simple-heading">
+          <h2>What customers say</h2>
+          <span>Real reviews appear once products are delivered and approved.</span>
+        </div>
+        <div className="minimal-reviews">
           {(reviews.length ? reviews : demoReviews).map((review) => (
             <article key={review.id}>
-              <p>“{review.comment}”</p>
+              <div className="review-avatar" />
+              <p>{review.comment}</p>
               <strong>{review.user_name}</strong>
               <span>★ {review.rating}.0</span>
             </article>
           ))}
         </div>
       </section>
+
+      <section className="home-section inspiration-block">
+        <h2>Shop inspirations</h2>
+        <div className="inspiration-grid">
+          <Link to="/shop?style=running">Running shoes</Link>
+          <Link to="/shop?style=casual">Casual sneakers</Link>
+          <Link to="/shop?style=boots">Boots</Link>
+          <Link to="/shop?in_stock=true">In stock today</Link>
+        </div>
+      </section>
+
+      <section className="home-section faq-compact">
+        <h2>Details before you decide</h2>
+        {faqs.map((faq) => (
+          <details key={faq.question}>
+            <summary>{faq.question}</summary>
+            <p>{faq.answer}</p>
+          </details>
+        ))}
+      </section>
     </>
   );
 }
+
+const fallbackBrands: Brand[] = [
+  { id: 1, name: "Nike", slug: "nike", description: "" },
+  { id: 2, name: "Adidas", slug: "adidas", description: "" },
+  { id: 3, name: "Puma", slug: "puma", description: "" },
+  { id: 4, name: "New Balance", slug: "new-balance", description: "" },
+];
 
 const demoReviews: Review[] = [
   {
@@ -167,9 +222,38 @@ const demoReviews: Review[] = [
     product: 1,
     user_name: "Nawamu customer",
     rating: 5,
-    title: "Comfortable",
-    comment: "Clean fit, fast checkout, and the size was exactly right.",
+    title: "Clean fit",
+    comment: "The product page was clear, checkout was quick, and the size was right.",
     is_verified_purchase: true,
     created_at: "",
+  },
+  {
+    id: 2,
+    product: 1,
+    user_name: "Returning buyer",
+    rating: 5,
+    title: "Easy",
+    comment: "I liked being able to search by size and track the order after payment.",
+    is_verified_purchase: true,
+    created_at: "",
+  },
+];
+
+const faqs = [
+  {
+    question: "Do you offer shoes for men, women, and kids?",
+    answer: "Yes. The shop filters products by gender, category, brand, size, colour, and stock.",
+  },
+  {
+    question: "Can I add to cart before logging in?",
+    answer: "Yes. The cart uses a backend cart token and can continue after login.",
+  },
+  {
+    question: "How does checkout work?",
+    answer: "Checkout creates an order in Django, reserves stock, and starts the M-Pesa payment flow.",
+  },
+  {
+    question: "Can I contact support?",
+    answer: "Yes. Contact messages become support tickets that admin can reply to.",
   },
 ];

@@ -1,4 +1,16 @@
-import type { Brand, Cart, Category, Order, Paginated, Product, Review, SupportTicket, User } from "./types";
+import type {
+  AdminDashboard,
+  AdminUser,
+  Brand,
+  Cart,
+  Category,
+  Order,
+  Paginated,
+  Product,
+  Review,
+  SupportTicket,
+  User,
+} from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
 const TOKEN_KEY = "nawamu.access";
@@ -107,7 +119,7 @@ export const api = {
     return api.login(payload.email, payload.password);
   },
   me: () => apiFetch<User>("/auth/me/"),
-  orders: () => apiFetch<Paginated<Order>>("/orders/"),
+  orders: (query = "") => apiFetch<Paginated<Order>>(`/orders/${query}`),
   order: (number: string) => apiFetch<Order>(`/orders/${number}/`),
   supportTickets: () => apiFetch<Paginated<SupportTicket>>("/support/tickets/"),
   createSupportTicket: (payload: Record<string, unknown>) =>
@@ -117,6 +129,22 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ body }),
     }),
+  adminDashboard: () => apiFetch<AdminDashboard>("/admin/dashboard/"),
+  adminUsers: (query = "") => apiFetch<Paginated<AdminUser>>(`/admin/users/${query}`),
+  adminUpdateOrderStatus: (number: string, payload: Record<string, unknown>) =>
+    apiFetch<Order>(`/orders/${number}/update_status/`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  adminResolveTicket: (id: number) => apiFetch<SupportTicket>(`/support/tickets/${id}/resolve/`, { method: "POST" }),
+  adminCloseTicket: (id: number) => apiFetch<SupportTicket>(`/support/tickets/${id}/close/`, { method: "POST" }),
+  adminReplyTicket: (id: number, body: string, isInternalNote = false) =>
+    apiFetch<SupportTicket>(`/support/tickets/${id}/reply/`, {
+      method: "POST",
+      body: JSON.stringify({ body, is_internal_note: isInternalNote }),
+    }),
+  adminApproveReview: (id: number) => apiFetch<Review>(`/reviews/${id}/approve/`, { method: "POST" }),
+  adminRejectReview: (id: number) => apiFetch<Review>(`/reviews/${id}/reject/`, { method: "POST" }),
 };
 
 export function asList<T>(payload: Paginated<T> | T[]): T[] {

@@ -22,7 +22,7 @@ const fallbackImages = [
 
 export function productImage(product: Product, index = 0) {
   const primary = product.primary_image?.image || product.images?.find((image) => image.is_primary)?.image || product.images?.[0]?.image;
-  if (primary) return primary;
+  if (primary && !primary.includes("demo-placeholder")) return primary;
   return fallbackImages[(product.id + index) % fallbackImages.length];
 }
 

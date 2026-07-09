@@ -51,7 +51,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     filterset_fields = ["status", "tracking_number"]
 
     def get_permissions(self):
-        if self.action in ["create", "update_status"]:
+        if self.action in ["create", "update", "partial_update", "destroy", "update_status"]:
             return [IsStaff()]
         return [permissions.IsAuthenticated()]
 

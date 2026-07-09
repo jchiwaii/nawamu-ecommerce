@@ -14,6 +14,7 @@ from apps.catalog.serializers import (
     ProductDetailSerializer,
     ProductListSerializer,
     ProductWriteSerializer,
+    ProductVariantSerializer,
     ReviewSerializer,
 )
 from apps.common.permissions import IsAdminOrReadOnly, IsStaff
@@ -54,9 +55,10 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering = ["-is_featured", "-sold_count", "name"]
 
     def get_queryset(self):
+        variant_queryset = ProductVariant.objects.all() if self.request.user.is_staff else ProductVariant.objects.filter(is_active=True)
         queryset = (
             Product.objects.select_related("category", "brand")
-            .prefetch_related("tags", "images", Prefetch("variants", queryset=ProductVariant.objects.filter(is_active=True)))
+            .prefetch_related("tags", "images", Prefetch("variants", queryset=variant_queryset))
         )
         if not self.request.user.is_staff:
             queryset = queryset.active()
@@ -108,6 +110,18 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Favorite.objects.filter(user=self.request.user).select_related("product", "product__category", "product__brand")
+
+
+class ProductVariantViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductVariantSerializer
+    permission_classes = [IsStaff]
+    filterset_fields = ["product", "sku", "size", "color", "is_active"]
+    search_fields = ["sku", "product__name", "size", "color"]
+    ordering_fields = ["stock_quantity", "sku", "created_at"]
+    ordering = ["product__name", "size", "color"]
+
+    def get_queryset(self):
+        return ProductVariant.objects.select_related("product", "product__brand", "product__category")
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

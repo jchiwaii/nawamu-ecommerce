@@ -13,6 +13,7 @@ from apps.catalog.views import (
     CategoryViewSet,
     FavoriteViewSet,
     ProductViewSet,
+    ProductVariantViewSet,
     ReviewViewSet,
 )
 from apps.common.views import NotificationViewSet
@@ -25,6 +26,7 @@ router = DefaultRouter()
 router.register("categories", CategoryViewSet, basename="category")
 router.register("brands", BrandViewSet, basename="brand")
 router.register("products", ProductViewSet, basename="product")
+router.register("admin/variants", ProductVariantViewSet, basename="admin-variant")
 router.register("favorites", FavoriteViewSet, basename="favorite")
 router.register("reviews", ReviewViewSet, basename="review")
 router.register("cart", CartViewSet, basename="cart")

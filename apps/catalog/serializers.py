@@ -42,6 +42,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 
 class ProductVariantSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source="product.name", read_only=True)
     price = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     is_low_stock = serializers.BooleanField(read_only=True)
 
@@ -49,6 +50,8 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         model = ProductVariant
         fields = [
             "id",
+            "product",
+            "product_name",
             "sku",
             "size",
             "color",

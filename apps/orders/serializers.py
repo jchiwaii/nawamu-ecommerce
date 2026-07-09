@@ -48,6 +48,10 @@ class OrderSerializer(serializers.ModelSerializer):
             "id",
             "number",
             "status",
+            "fulfillment_method",
+            "delivery_location",
+            "preferred_delivery_window",
+            "pickup_location",
             "email",
             "phone",
             "shipping_full_name",
@@ -84,6 +88,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class CheckoutSerializer(serializers.Serializer):
+    fulfillment_method = serializers.ChoiceField(choices=Order.FulfillmentMethod.choices, required=False, default=Order.FulfillmentMethod.DELIVERY)
     shipping_address_id = serializers.IntegerField(required=False)
     email = serializers.EmailField(required=False)
     phone = serializers.CharField(required=False, allow_blank=True)
@@ -95,6 +100,9 @@ class CheckoutSerializer(serializers.Serializer):
     shipping_county = serializers.CharField(required=False, allow_blank=True)
     shipping_country = serializers.CharField(required=False, default="Kenya")
     shipping_postal_code = serializers.CharField(required=False, allow_blank=True)
+    delivery_location = serializers.CharField(required=False, allow_blank=True)
+    preferred_delivery_window = serializers.CharField(required=False, allow_blank=True)
+    pickup_location = serializers.CharField(required=False, allow_blank=True)
     shipping_amount = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, default=0)
     discount_amount = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, default=0)
     customer_note = serializers.CharField(required=False, allow_blank=True)
@@ -109,6 +117,7 @@ class ManualOrderItemSerializer(serializers.Serializer):
 class ManualOrderCreateSerializer(serializers.Serializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     status = serializers.ChoiceField(choices=Order.Status.choices, required=False, default=Order.Status.PAID)
+    fulfillment_method = serializers.ChoiceField(choices=Order.FulfillmentMethod.choices, required=False, default=Order.FulfillmentMethod.DELIVERY)
     email = serializers.EmailField(required=False)
     phone = serializers.CharField(required=False, allow_blank=True)
     shipping_full_name = serializers.CharField()
@@ -119,6 +128,9 @@ class ManualOrderCreateSerializer(serializers.Serializer):
     shipping_county = serializers.CharField(required=False, allow_blank=True)
     shipping_country = serializers.CharField(required=False, default="Kenya")
     shipping_postal_code = serializers.CharField(required=False, allow_blank=True)
+    delivery_location = serializers.CharField(required=False, allow_blank=True)
+    preferred_delivery_window = serializers.CharField(required=False, allow_blank=True)
+    pickup_location = serializers.CharField(required=False, allow_blank=True)
     shipping_amount = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, default=0)
     discount_amount = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, default=0)
     customer_note = serializers.CharField(required=False, allow_blank=True)

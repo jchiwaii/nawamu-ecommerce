@@ -8,10 +8,13 @@ export function Layout({ children }: PropsWithChildren) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [cart, setCart] = useState<Cart | null>(null);
+  const pathname = router.path.split("?")[0].replace(/\/$/, "") || "/";
+  const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
 
   useEffect(() => {
+    if (isAdminRoute) return;
     api.cart().then(setCart).catch(() => setCart(null));
-  }, [router.path]);
+  }, [isAdminRoute, router.path]);
 
   const nav = [
     { href: "/", label: "Home" },
@@ -19,6 +22,10 @@ export function Layout({ children }: PropsWithChildren) {
     { href: "/shop", label: "Shop" },
     { href: "/contact", label: "Contact" },
   ];
+
+  if (isAdminRoute) {
+    return <div className="site-shell admin-only-shell"><main>{children}</main></div>;
+  }
 
   return (
     <div className="site-shell">

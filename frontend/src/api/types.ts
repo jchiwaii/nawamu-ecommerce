@@ -9,7 +9,10 @@ export type Category = {
   id: number;
   name: string;
   slug: string;
+  parent?: number | null;
   description: string;
+  is_active?: boolean;
+  sort_order?: number;
 };
 
 export type Brand = {
@@ -17,6 +20,7 @@ export type Brand = {
   name: string;
   slug: string;
   description: string;
+  is_active?: boolean;
 };
 
 export type ProductImage = {
@@ -28,14 +32,36 @@ export type ProductImage = {
 
 export type ProductVariant = {
   id: number;
+  product?: number;
+  product_name?: string;
   sku: string;
   size: string;
   color: string;
   price: string;
   price_override: string | null;
   stock_quantity: number;
+  low_stock_threshold: number;
   is_active: boolean;
   is_low_stock: boolean;
+};
+
+export type Payment = {
+  id: number;
+  order: number;
+  order_number: string;
+  provider: "mpesa";
+  status: "pending" | "processing" | "success" | "failed" | "cancelled";
+  amount: string;
+  currency: string;
+  phone: string;
+  merchant_request_id: string;
+  checkout_request_id: string;
+  receipt_number: string;
+  result_code: string;
+  result_description: string;
+  processed_at: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type Product = {
@@ -58,6 +84,7 @@ export type Product = {
   review_count: number;
   sold_count: number;
   is_featured: boolean;
+  is_active?: boolean;
   is_favorite?: boolean;
 };
 
@@ -172,6 +199,10 @@ export type Order = {
   id: number;
   number: string;
   status: string;
+  fulfillment_method: "delivery" | "pickup";
+  delivery_location: string;
+  preferred_delivery_window: string;
+  pickup_location: string;
   total: string;
   subtotal: string;
   shipping_amount: string;

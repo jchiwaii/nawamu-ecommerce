@@ -88,12 +88,14 @@ class AddressSerializer(serializers.ModelSerializer):
 
 class AdminUserSerializer(serializers.ModelSerializer):
     order_count = serializers.IntegerField(read_only=True)
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True, min_length=8)
 
     class Meta:
         model = User
         fields = [
             "id",
             "email",
+            "password",
             "full_name",
             "phone",
             "role",
@@ -106,3 +108,20 @@ class AdminUserSerializer(serializers.ModelSerializer):
             "last_login",
         ]
         read_only_fields = ["id", "date_joined", "last_login", "order_count"]
+
+    def validate(self, attrs):
+        if self.instance is None and not attrs.get("password"):
+            raise serializers.ValidationError({"password": "Password is required when creating a user."})
+        return attrs
+
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+        return User.objects.create_user(password=password, **validated_data)
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", "")
+        instance = super().update(instance, validated_data)
+        if password:
+            instance.set_password(password)
+            instance.save(update_fields=["password"])
+        return instance

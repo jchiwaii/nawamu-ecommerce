@@ -53,6 +53,10 @@ def create_order_from_cart(*, user: User, cart: Cart, checkout_data: dict) -> Or
 
     order = Order.objects.create(
         user=user,
+        fulfillment_method=checkout_data.get("fulfillment_method", Order.FulfillmentMethod.DELIVERY),
+        delivery_location=checkout_data.get("delivery_location", ""),
+        preferred_delivery_window=checkout_data.get("preferred_delivery_window", ""),
+        pickup_location=checkout_data.get("pickup_location", ""),
         email=checkout_data.get("email") or user.email,
         phone=normalize_phone(checkout_data.get("phone") or user.phone or address.get("phone", "")),
         shipping_full_name=address["full_name"],
@@ -137,6 +141,10 @@ def create_manual_order(*, actor: User, user: User, items_data: list[dict], orde
     order = Order.objects.create(
         user=user,
         status=status,
+        fulfillment_method=order_data.get("fulfillment_method", Order.FulfillmentMethod.DELIVERY),
+        delivery_location=order_data.get("delivery_location", ""),
+        preferred_delivery_window=order_data.get("preferred_delivery_window", ""),
+        pickup_location=order_data.get("pickup_location", ""),
         email=order_data.get("email") or user.email,
         phone=normalize_phone(order_data.get("phone") or user.phone),
         shipping_full_name=order_data["shipping_full_name"],
@@ -249,6 +257,19 @@ def _increment_sales(order: Order) -> None:
 
 
 def _resolve_address(user: User, checkout_data: dict) -> dict:
+    if checkout_data.get("fulfillment_method") == Order.FulfillmentMethod.PICKUP:
+        pickup_location = checkout_data.get("pickup_location") or "Nawamu pickup point, Ngara, Nairobi"
+        return {
+            "full_name": checkout_data.get("shipping_full_name") or user.display_name,
+            "phone": checkout_data.get("shipping_phone") or user.phone,
+            "line1": pickup_location,
+            "line2": "",
+            "city": "Nairobi",
+            "county": "Nairobi",
+            "country": "Kenya",
+            "postal_code": "",
+        }
+
     address_id = checkout_data.get("shipping_address_id")
     if address_id:
         address = Address.objects.get(pk=address_id, user=user)

@@ -47,6 +47,7 @@ function Routes() {
   if (pathname === "/admin/orders") return <AdminPage tab="orders" />;
   if (pathname === "/admin/products") return <AdminPage tab="products" />;
   if (pathname === "/admin/users") return <AdminPage tab="users" />;
+  if (pathname === "/admin/payments") return <AdminPage tab="payments" />;
   if (pathname === "/admin/support") return <AdminPage tab="support" />;
   if (pathname === "/admin/reviews") return <AdminPage tab="reviews" />;
 

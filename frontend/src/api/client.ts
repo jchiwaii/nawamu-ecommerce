@@ -6,7 +6,9 @@ import type {
   Category,
   Order,
   Paginated,
+  Payment,
   Product,
+  ProductVariant,
   Review,
   SupportTicket,
   User,
@@ -121,6 +123,7 @@ export const api = {
   me: () => apiFetch<User>("/auth/me/"),
   orders: (query = "") => apiFetch<Paginated<Order>>(`/orders/${query}`),
   order: (number: string) => apiFetch<Order>(`/orders/${number}/`),
+  payments: (query = "") => apiFetch<Paginated<Payment>>(`/payments/${query}`),
   supportTickets: () => apiFetch<Paginated<SupportTicket>>("/support/tickets/"),
   createSupportTicket: (payload: Record<string, unknown>) =>
     apiFetch<SupportTicket>("/support/tickets/", { method: "POST", body: JSON.stringify(payload) }),
@@ -131,10 +134,43 @@ export const api = {
     }),
   adminDashboard: () => apiFetch<AdminDashboard>("/admin/dashboard/"),
   adminUsers: (query = "") => apiFetch<Paginated<AdminUser>>(`/admin/users/${query}`),
+  adminCreateUser: (payload: Record<string, unknown>) =>
+    apiFetch<AdminUser>("/admin/users/", { method: "POST", body: JSON.stringify(payload) }),
+  adminUpdateUser: (id: number, payload: Record<string, unknown>) =>
+    apiFetch<AdminUser>(`/admin/users/${id}/`, { method: "PATCH", body: JSON.stringify(payload) }),
+  adminDeleteUser: (id: number) => apiFetch<void>(`/admin/users/${id}/`, { method: "DELETE" }),
+  adminCreateCategory: (payload: Record<string, unknown>) =>
+    apiFetch<Category>("/categories/", { method: "POST", body: JSON.stringify(payload) }),
+  adminUpdateCategory: (slug: string, payload: Record<string, unknown>) =>
+    apiFetch<Category>(`/categories/${slug}/`, { method: "PATCH", body: JSON.stringify(payload) }),
+  adminDeleteCategory: (slug: string) => apiFetch<void>(`/categories/${slug}/`, { method: "DELETE" }),
+  adminCreateBrand: (payload: Record<string, unknown>) =>
+    apiFetch<Brand>("/brands/", { method: "POST", body: JSON.stringify(payload) }),
+  adminUpdateBrand: (slug: string, payload: Record<string, unknown>) =>
+    apiFetch<Brand>(`/brands/${slug}/`, { method: "PATCH", body: JSON.stringify(payload) }),
+  adminDeleteBrand: (slug: string) => apiFetch<void>(`/brands/${slug}/`, { method: "DELETE" }),
+  adminCreateProduct: (payload: Record<string, unknown>) =>
+    apiFetch<Product>("/products/", { method: "POST", body: JSON.stringify(payload) }),
+  adminUpdateProduct: (slug: string, payload: Record<string, unknown>) =>
+    apiFetch<Product>(`/products/${slug}/`, { method: "PATCH", body: JSON.stringify(payload) }),
+  adminDeleteProduct: (slug: string) => apiFetch<void>(`/products/${slug}/`, { method: "DELETE" }),
+  adminVariants: (query = "") => apiFetch<Paginated<ProductVariant>>(`/admin/variants/${query}`),
+  adminCreateVariant: (payload: Record<string, unknown>) =>
+    apiFetch<ProductVariant>("/admin/variants/", { method: "POST", body: JSON.stringify(payload) }),
+  adminUpdateVariant: (id: number, payload: Record<string, unknown>) =>
+    apiFetch<ProductVariant>(`/admin/variants/${id}/`, { method: "PATCH", body: JSON.stringify(payload) }),
+  adminDeleteVariant: (id: number) => apiFetch<void>(`/admin/variants/${id}/`, { method: "DELETE" }),
+  adminCreateOrder: (payload: Record<string, unknown>) =>
+    apiFetch<Order>("/orders/", { method: "POST", body: JSON.stringify(payload) }),
   adminUpdateOrderStatus: (number: string, payload: Record<string, unknown>) =>
     apiFetch<Order>(`/orders/${number}/update_status/`, {
       method: "POST",
       body: JSON.stringify(payload),
+    }),
+  adminRetryMpesaPayment: (id: number, phone?: string) =>
+    apiFetch<Record<string, unknown>>(`/payments/${id}/retry_mpesa/`, {
+      method: "POST",
+      body: JSON.stringify({ phone: phone || "" }),
     }),
   adminResolveTicket: (id: number) => apiFetch<SupportTicket>(`/support/tickets/${id}/resolve/`, { method: "POST" }),
   adminCloseTicket: (id: number) => apiFetch<SupportTicket>(`/support/tickets/${id}/close/`, { method: "POST" }),

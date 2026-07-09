@@ -265,6 +265,12 @@ def test_staff_admin_api_manual_order_status_and_dashboard_flow(api_client, user
     assert product_variant.stock_quantity == 4
 
     order_number = manual_order.data["number"]
+
+    api_client.force_authenticate(user=user)
+    customer_delete = api_client.delete(f"/api/orders/{order_number}/")
+    assert customer_delete.status_code == 403
+
+    api_client.force_authenticate(user=staff_user)
     update = api_client.post(
         f"/api/orders/{order_number}/update_status/",
         {
@@ -355,18 +361,93 @@ def test_staff_can_manage_catalog_and_django_admin_pages_smoke(api_client, clien
     assert product.status_code == 201
     assert Product.objects.filter(name="Nawamu Daily Sneaker").exists()
 
-    ProductVariant.objects.create(
-        product=Product.objects.get(id=product.data["id"]),
-        sku="NAW-DAILY-41-WHT",
-        size="41",
-        color="White",
-        stock_quantity=9,
+    update_product = api_client.patch(
+        f"/api/products/{product.data['slug']}/",
+        {"base_price": "3300.00", "is_featured": False},
+        format="json",
     )
+    assert update_product.status_code == 200
+
+    variant = api_client.post(
+        "/api/admin/variants/",
+        {
+            "product": product.data["id"],
+            "sku": "NAW-DAILY-41-WHT",
+            "size": "41",
+            "color": "White",
+            "stock_quantity": 9,
+            "low_stock_threshold": 3,
+            "is_active": True,
+        },
+        format="json",
+    )
+    assert variant.status_code == 201
+
+    update_variant = api_client.patch(
+        f"/api/admin/variants/{variant.data['id']}/",
+        {"stock_quantity": 12, "price_override": "3100.00"},
+        format="json",
+    )
+    assert update_variant.status_code == 200
+    assert update_variant.data["stock_quantity"] == 12
+
     public_detail = api_client.get(f"/api/products/{product.data['slug']}/")
     assert public_detail.status_code == 200
     assert public_detail.data["variants"][0]["sku"] == "NAW-DAILY-41-WHT"
+    assert public_detail.data["variants"][0]["price_override"] == "3100.00"
+
+    delete_variant = api_client.delete(f"/api/admin/variants/{variant.data['id']}/")
+    assert delete_variant.status_code == 204
+    assert not ProductVariant.objects.filter(pk=variant.data["id"]).exists()
+
+    delete_product = api_client.delete(f"/api/products/{product.data['slug']}/")
+    assert delete_product.status_code == 204
+    assert not Product.objects.filter(pk=product.data["id"]).exists()
 
     client.force_login(staff_user)
     assert client.get("/admin/").status_code == 200
     for model in [User, Address, Category, Brand, Product, ProductVariant, Review, Order, Payment, SupportTicket]:
         assert model in site._registry
+
+
+@pytest.mark.django_db
+def test_staff_can_create_update_and_remove_users_from_admin_api(api_client, staff_user):
+    api_client.force_authenticate(user=staff_user)
+
+    create = api_client.post(
+        "/api/admin/users/",
+        {
+            "email": "new.staff@example.com",
+            "password": "StrongPass123!",
+            "full_name": "New Staff",
+            "phone": "0700000001",
+            "role": User.Role.SUPPORT,
+            "is_active": True,
+            "is_staff": True,
+            "email_verified": True,
+        },
+        format="json",
+    )
+    assert create.status_code == 201
+    created_user = User.objects.get(email="new.staff@example.com")
+    assert created_user.check_password("StrongPass123!")
+    assert created_user.is_staff is True
+
+    update = api_client.patch(
+        f"/api/admin/users/{created_user.id}/",
+        {
+            "full_name": "Support Lead",
+            "is_active": False,
+            "password": "ChangedPass123!",
+        },
+        format="json",
+    )
+    assert update.status_code == 200
+    created_user.refresh_from_db()
+    assert created_user.full_name == "Support Lead"
+    assert created_user.is_active is False
+    assert created_user.check_password("ChangedPass123!")
+
+    delete = api_client.delete(f"/api/admin/users/{created_user.id}/")
+    assert delete.status_code == 204
+    assert not User.objects.filter(pk=created_user.id).exists()

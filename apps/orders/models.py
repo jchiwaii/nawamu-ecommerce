@@ -23,9 +23,17 @@ class Order(TimeStampedModel):
         CANCELLED = "cancelled", "Cancelled"
         REFUNDED = "refunded", "Refunded"
 
+    class FulfillmentMethod(models.TextChoices):
+        DELIVERY = "delivery", "Delivery"
+        PICKUP = "pickup", "Pickup"
+
     number = models.CharField(max_length=32, unique=True, editable=False, db_index=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="orders")
     status = models.CharField(max_length=24, choices=Status.choices, default=Status.PENDING_PAYMENT, db_index=True)
+    fulfillment_method = models.CharField(max_length=16, choices=FulfillmentMethod.choices, default=FulfillmentMethod.DELIVERY)
+    delivery_location = models.CharField(max_length=180, blank=True)
+    preferred_delivery_window = models.CharField(max_length=120, blank=True)
+    pickup_location = models.CharField(max_length=180, blank=True)
     email = models.EmailField()
     phone = models.CharField(max_length=32)
     shipping_full_name = models.CharField(max_length=160)

@@ -58,6 +58,34 @@ def test_checkout_rejects_oversell_without_changing_stock(api_client, user, prod
 
 
 @pytest.mark.django_db
+def test_pickup_checkout_uses_ngara_location_without_delivery_address(api_client, user, product_variant):
+    cart = Cart.objects.create(user=user)
+    CartItem.objects.create(cart=cart, variant=product_variant, quantity=1)
+    api_client.force_authenticate(user=user)
+
+    response = api_client.post(
+        "/api/checkout/",
+        {
+            "fulfillment_method": Order.FulfillmentMethod.PICKUP,
+            "shipping_full_name": "Customer One",
+            "shipping_phone": "0712345678",
+            "pickup_location": "Nawamu pickup point, Ngara, Nairobi",
+            "preferred_delivery_window": "Tomorrow, 9am - 12pm",
+            "mpesa_phone": "0712345678",
+        },
+        format="json",
+    )
+
+    assert response.status_code == 201
+    order = Order.objects.get(number=response.data["order"]["number"])
+    assert order.fulfillment_method == Order.FulfillmentMethod.PICKUP
+    assert order.shipping_line1 == "Nawamu pickup point, Ngara, Nairobi"
+    assert order.shipping_amount == 0
+    assert order.total == product_variant.product.base_price
+    assert order.preferred_delivery_window == "Tomorrow, 9am - 12pm"
+
+
+@pytest.mark.django_db
 def test_mpesa_success_callback_marks_order_paid_once(api_client, user, product_variant):
     cart = Cart.objects.create(user=user)
     CartItem.objects.create(cart=cart, variant=product_variant, quantity=1)

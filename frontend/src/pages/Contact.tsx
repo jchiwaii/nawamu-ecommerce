@@ -8,7 +8,8 @@ export function Contact() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
     setStatus("Sending...");
     try {
       await api.createSupportTicket({
@@ -18,7 +19,7 @@ export function Contact() {
         category: "storefront",
         message: form.get("message"),
       });
-      event.currentTarget.reset();
+      formEl.reset();
       setStatus("Message sent. Admin can reply from support tickets.");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Could not send message.");

@@ -1,7 +1,7 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { api, apiFetch, asList } from "../api/client";
 import type { AdminDashboard, AdminUser, Brand, Category, Order, Payment, Product, ProductVariant, Review, SupportTicket } from "../api/types";
-import { EmptyBlock, ErrorBlock, LoadingBlock } from "../components/AsyncState";
+import { ErrorBlock, LoadingBlock } from "../components/AsyncState";
 import { Field, Select, TextArea } from "../components/forms";
 import { useAuth } from "../state/auth";
 import { Link, useRouter } from "../state/router";
@@ -28,10 +28,10 @@ export function AdminPage({ tab }: { tab: AdminTab }) {
     <RequireStaff>
       <section className="admin-shell">
         <aside className="admin-sidebar">
-          <Link to="/" className="brand admin-brand">
+          <div className="brand admin-brand" aria-label="Nawamu admin">
             <span className="brand-mark">N</span>
             <span>Nawamu</span>
-          </Link>
+          </div>
           <nav>
             {tabs.map((item) => (
               <Link key={item.id} to={item.id === "dashboard" ? "/admin" : `/admin/${item.id}`} className={item.id === tab ? "active" : ""}>
@@ -66,20 +66,19 @@ function RequireStaff({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) router.navigate("/login");
+    if (loading) return;
+    if (!user) {
+      router.navigate(`/login?next=${encodeURIComponent(router.path)}`);
+      return;
+    }
+    if (!user.is_staff) {
+      router.navigate("/");
+    }
   }, [loading, user, router]);
 
   if (loading) return <LoadingBlock label="Checking admin access" />;
   if (!user) return null;
-  if (!user.is_staff) {
-    return (
-      <EmptyBlock>
-        <h2>Staff access required.</h2>
-        <p>Login with a staff/admin account to open the admin UI.</p>
-        <Link to="/login" className="button primary">Login</Link>
-      </EmptyBlock>
-    );
-  }
+  if (!user.is_staff) return null;
   return <>{children}</>;
 }
 
@@ -618,11 +617,13 @@ function AdminProductsPage() {
   return (
     <>
       <AdminHeader title="Product" copy="Create, edit, hide, remove, and stock shoe products from the admin UI.">
-        <form className="admin-inline-form" onSubmit={(event) => { event.preventDefault(); load(query); }}>
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products" />
-          <button>Search</button>
-        </form>
-        <button className="quiet-button dark" onClick={newProduct}>New product</button>
+        <div className="admin-header-control-group">
+          <form className="admin-search-control" onSubmit={(event) => { event.preventDefault(); load(query); }}>
+            <input className="admin-control-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products" />
+            <button className="admin-control-button">Search</button>
+          </form>
+          <button className="admin-control-button" onClick={newProduct}>New product</button>
+        </div>
       </AdminHeader>
       {loading ? <LoadingBlock label="Loading products" /> : null}
       {error ? <ErrorBlock message={error} /> : null}
@@ -856,11 +857,13 @@ function AdminUsersPage() {
   return (
     <>
       <AdminHeader title="Users" copy="Create customers or staff accounts, edit roles and deactivate users from the admin UI.">
-        <form className="admin-inline-form" onSubmit={(event) => { event.preventDefault(); load(search); }}>
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search users" />
-          <button>Search</button>
-        </form>
-        <button className="quiet-button dark" onClick={newUser}>New user</button>
+        <div className="admin-header-control-group">
+          <form className="admin-search-control" onSubmit={(event) => { event.preventDefault(); load(search); }}>
+            <input className="admin-control-input" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search users" />
+            <button className="admin-control-button">Search</button>
+          </form>
+          <button className="admin-control-button" onClick={newUser}>New user</button>
+        </div>
       </AdminHeader>
       {loading ? <LoadingBlock label="Loading users" /> : null}
       {error ? <ErrorBlock message={error} /> : null}

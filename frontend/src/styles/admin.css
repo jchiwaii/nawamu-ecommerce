@@ -188,6 +188,63 @@
   gap: 8px;
 }
 
+.admin-header-actions > .quiet-button,
+.admin-header-actions .admin-inline-form,
+.admin-header-actions .field,
+.admin-header-control-group {
+  align-self: end;
+}
+
+.admin-header-control-group {
+  display: grid;
+  grid-template-columns: minmax(300px, 420px) auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.admin-search-control {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.admin-shell .admin-control-input,
+.admin-shell .admin-control-button {
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid var(--admin-line-strong);
+  border-radius: var(--admin-radius);
+  background: var(--admin-surface);
+  color: var(--admin-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  box-shadow: none;
+  appearance: none;
+}
+
+.admin-shell .admin-control-input::placeholder {
+  color: var(--admin-muted);
+  font-weight: 400;
+}
+
+.admin-shell .admin-control-button {
+  min-width: 88px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.admin-header-control-group > .admin-control-button {
+  min-width: 112px;
+}
+
 .admin-metrics,
 .admin-grid-two,
 .admin-crud-grid,
@@ -260,7 +317,8 @@
 
 .admin-inline-form {
   min-width: min(440px, 42vw);
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
   gap: 8px;
 }
 
@@ -275,7 +333,8 @@
 
 .admin-inline-form input,
 .admin-inline-form button,
-.quiet-button {
+.quiet-button,
+.admin-shell .field select {
   min-height: 40px;
 }
 
@@ -300,10 +359,18 @@
 }
 
 .admin-inline-form button,
+.quiet-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.admin-inline-form button,
 .quiet-button.dark {
-  border: 1px solid var(--admin-ink);
-  background: var(--admin-ink);
-  color: #ffffff;
+  border: 1px solid var(--admin-line-strong);
+  background: var(--admin-surface);
+  color: var(--admin-ink);
   font-weight: 500;
 }
 
@@ -314,6 +381,10 @@
   color: var(--admin-ink);
   font-size: 12px;
   font-weight: 500;
+}
+
+.admin-header-actions .quiet-button.dark {
+  min-width: 112px;
 }
 
 .quiet-button.danger {
@@ -423,6 +494,31 @@
   min-height: 40px;
 }
 
+.admin-header-actions .field {
+  min-width: 156px;
+  gap: 0;
+  position: relative;
+}
+
+.admin-header-actions .field span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.admin-header-actions .field select {
+  min-height: 40px;
+  padding: 0 36px 0 12px;
+  border: 1px solid var(--admin-line-strong);
+  background: var(--admin-surface);
+  color: var(--admin-ink);
+  font-size: 12px;
+  font-weight: 500;
+}
+
 .check-row {
   min-height: 40px;
   padding: 0 12px;
@@ -431,10 +527,28 @@
   gap: 8px;
   border: 1px solid var(--admin-line);
   border-radius: var(--admin-radius);
-  background: var(--admin-soft);
+  background: var(--admin-surface);
   color: var(--admin-ink);
   font-size: 12px;
   font-weight: 400;
+}
+
+.check-row input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex: 0 0 auto;
+  appearance: none;
+  border: 1px solid var(--admin-line-strong);
+  border-radius: 4px;
+  background: var(--admin-surface);
+}
+
+.check-row input:checked {
+  border-color: var(--admin-ink);
+  background:
+    linear-gradient(var(--admin-surface), var(--admin-surface)) center / 6px 6px no-repeat,
+    var(--admin-ink);
 }
 
 .admin-detail-list,
@@ -764,7 +878,9 @@
 
   .admin-header,
   .admin-header-actions,
-  .admin-inline-form {
+  .admin-inline-form,
+  .admin-header-control-group,
+  .admin-search-control {
     display: grid;
     grid-template-columns: 1fr;
     align-items: stretch;

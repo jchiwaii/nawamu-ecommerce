@@ -15,7 +15,14 @@ export function LoginPage() {
     const form = new FormData(event.currentTarget);
     try {
       await api.login(String(form.get("email")), String(form.get("password")));
+      const loggedInUser = await api.me();
       await refreshUser();
+      const query = router.path.split("?")[1] || "";
+      const next = new URLSearchParams(query).get("next");
+      if (next?.startsWith("/admin")) {
+        router.navigate(loggedInUser.is_staff ? next : "/");
+        return;
+      }
       router.navigate("/cart");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed.");

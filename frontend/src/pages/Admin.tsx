@@ -6,6 +6,8 @@ import { Field, Select, TextArea } from "../components/forms";
 import { useAuth } from "../state/auth";
 import { Link, useRouter } from "../state/router";
 import { money } from "../utils";
+import "../styles/admin.css";
+
 
 type AdminTab = "dashboard" | "orders" | "products" | "users" | "payments" | "support" | "reviews";
 
